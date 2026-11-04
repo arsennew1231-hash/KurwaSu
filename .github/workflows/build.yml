@@ -23,7 +23,8 @@ jobs:
 
     - name: Create Keystore
       run: |
-        keytool -genkey -v -keystore app/keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias keystorem -passin pass:androidpassword -passout pass:androidpassword -dname "CN=Android,O=Android,C=US"
+        mkdir -p app
+        keytool -genkey -v -keystore app/keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias keystorem -storepass androidpassword -keypass androidpassword -dname "CN=Android,O=Android,C=US"
 
     - name: Build Debug APK
       run: ./gradlew assembleDebug -Pandroid.injected.signing.store.file=keystore.jks -Pandroid.injected.signing.store.password=androidpassword -Pandroid.injected.signing.key.alias=keystorem -Pandroid.injected.signing.key.password=androidpassword --no-daemon
