@@ -399,9 +399,8 @@
 
     </df.root.CardStackLayout>
 
-    <!-- ВОССТАНОВЛЕННЫЕ КОМПОНЕНТЫ, КОТОРЫЕ ИЩЕТ JAVA-КОД (логи, кнопки, пилюли, диммер) -->
+    <!-- ВОССТАНОВЛЕННЫЕ КОМПОНЕНТЫ ИЗ ОРИГИНАЛЬНОГО КОДА -->
     
-    <!-- Диммер фона -->
     <View
         android:id="@+id/dimOverlay"
         android:layout_width="match_parent"
@@ -409,7 +408,6 @@
         android:background="#99000000"
         android:visibility="gone" />
 
-    <!-- Окно расширенного лога / консоль -->
     <FrameLayout
         android:id="@+id/logWindow"
         android:layout_width="match_parent"
@@ -435,7 +433,6 @@
         </ScrollView>
     </FrameLayout>
 
-    <!-- Кнопка шаринга логов -->
     <ImageButton
         android:id="@+id/btnShareLog"
         android:layout_width="48dp"
@@ -448,7 +445,6 @@
         android:src="@drawable/ic_share"
         android:visibility="gone" />
 
-    <!-- Дополнительные элементы для KSU и шагов -->
     <ImageView
         android:id="@+id/ksuChevron"
         android:layout_width="wrap_content"
@@ -465,6 +461,26 @@
         android:id="@+id/twoStep"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:visibility="gone" />
+
+    <!-- ДОБАВЛЕННЫЕ НЕДОСТАЮЩИЕ ИДЕНТИФИКАТОРЫ ИЗ ЛОГОВ (btnRun, btnKsu, bottomFade) -->
+    <Button
+        android:id="@+id/btnRun"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/btnKsu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
+
+    <View
+        android:id="@+id/bottomFade"
+        android:layout_width="match_parent"
+        android:layout_height="24dp"
+        android:layout_alignParentBottom="true"
         android:visibility="gone" />
 
 </RelativeLayout>
