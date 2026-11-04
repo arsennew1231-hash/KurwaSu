@@ -21,20 +21,18 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Restore Keystore from Secrets
+    - name: Generate Keystore on-the-fly
       run: |
         mkdir -p app
-        echo "${{ secrets.KEYSTORE_BASE64 }}" | tr -d '\r\n' > app/keystore.b64
-        base64 -d app/keystore.b64 > app/keystore.jks
-        rm app/keystore.b64
+        keytool -genkey -v -keystore app/keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias dirtyfrag -storepass androidpassword -keypass androidpassword -dname "CN=Android,O=Android,C=US"
 
-    - name: Build Debug APK with Secret Keystore
+    - name: Build Debug APK
       run: |
         ./gradlew assembleDebug \
           -Pandroid.injected.signing.store.file=keystore.jks \
-          -Pandroid.injected.signing.store.password="${{ secrets.KEYSTORE_PASSWORD }}" \
-          -Pandroid.injected.signing.key.alias="${{ secrets.KEY_ALIAS }}" \
-          -Pandroid.injected.signing.key.password="${{ secrets.KEY_PASSWORD }}" \
+          -Pandroid.injected.signing.store.password=androidpassword \
+          -Pandroid.injected.signing.key.alias=dirtyfrag \
+          -Pandroid.injected.signing.key.password=androidpassword \
           --no-daemon
 
     - name: Upload APK
