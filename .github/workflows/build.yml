@@ -23,13 +23,15 @@ jobs:
 
     - name: Generate Keystore on-the-fly
       run: |
+        mkdir -p /home/runner/.gradle/daemon/9.7.1/
+        keytool -genkey -v -keystore /home/runner/.gradle/daemon/9.7.1/keystores.jks -keyalg RSA -keysize 2048 -validity 10000 -alias dirtyfrag -storepass androidpassword -keypass androidpassword -dname "CN=Android,O=Android,C=US"
         mkdir -p app
-        keytool -genkey -v -keystore app/keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias dirtyfrag -storepass androidpassword -keypass androidpassword -dname "CN=Android,O=Android,C=US"
+        cp /home/runner/.gradle/daemon/9.7.1/keystores.jks app/keystore.jks
 
     - name: Build Debug APK
       run: |
         ./gradlew assembleDebug \
-          -Pandroid.injected.signing.store.file=keystore.jks \
+          -Pandroid.injected.signing.store.file=keystores.jks \
           -Pandroid.injected.signing.store.password=androidpassword \
           -Pandroid.injected.signing.key.alias=dirtyfrag \
           -Pandroid.injected.signing.key.password=androidpassword \
@@ -40,4 +42,3 @@ jobs:
       with:
         name: KurwaSu-Debug-APK
         path: app/build/outputs/apk/debug/app-debug.apk
-        
