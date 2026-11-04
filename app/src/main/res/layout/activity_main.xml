@@ -105,6 +105,7 @@
 
     </FrameLayout>
 
+    <!-- Invisible anchor for the popup menu -->
     <View
         android:id="@+id/menuAnchor"
         android:layout_width="8dp"
@@ -397,5 +398,73 @@
         </df.root.DraggableCardView>
 
     </df.root.CardStackLayout>
+
+    <!-- ВОССТАНОВЛЕННЫЕ КОМПОНЕНТЫ, КОТОРЫЕ ИЩЕТ JAVA-КОД (логи, кнопки, пилюли, диммер) -->
+    
+    <!-- Диммер фона -->
+    <View
+        android:id="@+id/dimOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#99000000"
+        android:visibility="gone" />
+
+    <!-- Окно расширенного лога / консоль -->
+    <FrameLayout
+        android:id="@+id/logWindow"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_alignParentBottom="true"
+        android:background="#FF111111"
+        android:visibility="gone">
+
+        <ScrollView
+            android:id="@+id/outputScroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="12dp">
+
+            <TextView
+                android:id="@+id/outputView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:text="KurwaSu log initialized...\n"
+                android:textColor="#FF00FF00"
+                android:textSize="12sp" />
+        </ScrollView>
+    </FrameLayout>
+
+    <!-- Кнопка шаринга логов -->
+    <ImageButton
+        android:id="@+id/btnShareLog"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="16dp"
+        android:background="@drawable/bg_circle"
+        android:contentDescription="Share Log"
+        android:src="@drawable/ic_share"
+        android:visibility="gone" />
+
+    <!-- Дополнительные элементы для KSU и шагов -->
+    <ImageView
+        android:id="@+id/ksuChevron"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/ksuLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
+
+    <View
+        android:id="@+id/twoStep"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
 
 </RelativeLayout>
