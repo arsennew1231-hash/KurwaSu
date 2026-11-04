@@ -24,7 +24,7 @@ jobs:
     - name: Restore Keystore from Secrets
       run: |
         mkdir -p app
-        echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/keystore.jks
+        echo "${{ secrets.KEYSTORE_BASE64 }}" | tr -d '\n' | base64 --decode > app/keystore.jks
 
     - name: Build Debug APK with Secret Keystore
       run: |
@@ -39,5 +39,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: KurwaSu-Debug-APK
-        path: app/build/outputs/apk/debug/app-debug.apk
-        
+        path: app/build/outputs/apk/debug/app-debug.app
