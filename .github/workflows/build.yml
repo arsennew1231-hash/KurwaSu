@@ -22,13 +22,8 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Generate correct keystore
-      run: |
-        rm -f app/keystore.jks
-        keytool -genkey -v -keystore app/keystore.jks -alias dirtyfrag -keyalg RSA -keysize 2048 -validity 10000 -storepass dirtyfragpass -keypass dirtyfragpass -dname "CN=Android,O=Android,C=US"
-
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug
+    - name: Build Debug APK bypassing signing
+      run: ./gradlew assembleDebug -Pandroid.injected.signing.store.file="" -Pandroid.injected.signing.store.password="" -Pandroid.injected.signing.key.alias="" -Pandroid.injected.signing.key.password=""
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
