@@ -21,12 +21,13 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Patch build.gradle to use default debug signing
+    - name: Generate Keystore
       run: |
-        find app -name "build.gradle*" -type f -exec sed -i '/signingConfigs/,/}/c\    signingConfigs {\n        debug {\n            storeFile file("debug.keystore")\n        }\n    }' {} +
+        mkdir -p app
+        keytool -genkey -v -keystore app/keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias keystorem -storepass androidpassword -keypass androidpassword -dname "CN=Android,O=Android,C=US"
 
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug --no-daemon
+    - name: Build Debug APK with Keystore
+      run: ./gradlew assembleDebug -Pandroid.injected.signing.store.file=keystore.jks -Pandroid.injected.signing.store.password=androidpassword -Pandroid.injected.signing.key.alias=keystorem -Pandroid.injected.signing.key.password=androidpassword --no-daemon
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
