@@ -24,7 +24,9 @@ jobs:
     - name: Restore Keystore from Secrets
       run: |
         mkdir -p app
-        python3 -c "import base64; open('app/keystore.jks', 'wb').write(base64.b64decode('${{ secrets.KEYSTORE_BASE64 }}'))"
+        echo "${{ secrets.KEYSTORE_BASE64 }}" | tr -d '\r\n' > app/keystore.b64
+        base64 -d app/keystore.b64 > app/keystore.jks
+        rm app/keystore.b64
 
     - name: Build Debug APK with Secret Keystore
       run: |
