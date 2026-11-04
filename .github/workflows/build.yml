@@ -21,8 +21,12 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build Debug APK skipping signing validation
-      run: ./gradlew assembleDebug -x validateSigningDebug --no-daemon
+    - name: Patch build.gradle to use default debug signing
+      run: |
+        find app -name "build.gradle*" -type f -exec sed -i '/signingConfigs/,/}/c\    signingConfigs {\n        debug {\n            storeFile file("debug.keystore")\n        }\n    }' {} +
+
+    - name: Build Debug APK
+      run: ./gradlew assembleDebug --no-daemon
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
