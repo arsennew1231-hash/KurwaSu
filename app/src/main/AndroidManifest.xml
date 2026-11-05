@@ -2,23 +2,41 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Package visibility (Android 11+): the SU-manager picker enumerates every
+         installed app and keeps only the ones that actually ship libksud.so, so a
+         fixed <queries> allow-list is no longer enough. The app is sideloaded, so
+         the Play policy lint that flags this broad permission does not apply. -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
     <application
-        android:allowBackup="true"
+        android:label="DirtyFrag"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
-        android:label="KurwaSu"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.KurwaSu"
-        tools:targetApi="31">
-        
+        android:theme="@style/Theme.DirtyFrag">
+
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-    </application>
 
+        <receiver
+            android:name=".BootReceiver"
+            android:directBootAware="true"
+            android:enabled="false"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+    </application>
 </manifest>
