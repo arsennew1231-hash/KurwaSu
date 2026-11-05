@@ -1,16 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- RelativeLayout, not ConstraintLayout: the app carries no androidx at all. What the
-     constraints were doing here is anchor-based (below the app bar, along the bottom
-     edge, to the left of the Run pill), which RelativeLayout says directly. The only
-     percentage geometry was the Run pill's 26% left edge and 48% width, and
-     MainActivity already computes both in pixels (setCompactButton measures the parent),
-     so the guideline has simply moved into that code. -->
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:background="#FF000000">
 
     <FrameLayout
         android:id="@+id/appBarLayout"
@@ -25,12 +20,10 @@
             android:layout_height="56dp"
             android:contentInsetStart="0dp"
             android:contentInsetStartWithNavigation="0dp"
-            android:title="DirtyFrag"
+            android:title="KurwaSU"
             android:titleMarginStart="32dp"
             android:titleTextAppearance="@style/ToolbarTitle">
 
-            <!-- OneUI-style overflow button: grey circle, right edge aligned
-                 with the card toggles below (32dp from screen edge). -->
             <ImageButton
                 android:id="@+id/btnMenu"
                 android:layout_width="44dp"
@@ -42,23 +35,6 @@
                 android:scaleType="center"
                 android:src="@drawable/ic_more" />
 
-            <!-- The update pill: the headline's replacement. Same 44dp capsule as
-                 the Odin pill and the menu button, but lime, and exactly as wide as
-                 the word it covers - when the release check comes back with newer,
-                 "DirtyFrag" is gone and this reads "Update" in its place, wiping in
-                 from the left edge (see showUpdatePill). The version number it
-                 displaces is not lost, only relocated: logged on every start and
-                 reported by the exploit run as "app version: ...".
-
-                 The pill's left edge is the headline's - 90px at 450dpi, measured -
-                 and the 32dp start margin is what puts it there: this Material
-                 toolbar lays its start children out at a content inset of nothing at
-                 all (measured: a 16dp margin rendered 45px, exactly the margin), so
-                 the margin alone has to carry the title's own 32dp titleMarginStart.
-                 It takes the title's slot instead of drawing over it because a
-                 toolbar lays its children out in a row: two views in that row push
-                 each other sideways, and a view drawn on top of the title is clipped
-                 by the title's own line box. -->
             <FrameLayout
                 android:id="@+id/updatePill"
                 android:layout_width="0dp"
@@ -71,9 +47,6 @@
                 android:focusable="true"
                 android:visibility="gone">
 
-                <!-- Fixed to the headline's width in code and centred inside that,
-                     so the growing pill reveals the word instead of dragging its
-                     centre along with it. -->
                 <TextView
                     android:id="@+id/updateLabel"
                     android:layout_width="wrap_content"
@@ -87,28 +60,6 @@
 
             </FrameLayout>
 
-            <!-- Recovery / download mode, left of the menu button. It is
-                 deliberately the same 44dp square-module size as that button and
-                 the same #1C1C1C fill, so the two read as one pair of toolbar
-                 controls rather than a title badge and a button.
-
-                 The dot says what the bootloader will do when the phone is asked to
-                 enter download mode: lime = it lets the device in, red = the D2
-                 error, amber = the owner switched recovery mode on and nothing has
-                 confirmed it yet, grey = this firmware does not gate download mode
-                 at all. A tap toggles the authorisation byte of Samsung's DMC vault
-                 (D2Writer drives the vendor's own vaultkeeper service through su);
-                 a long press opens the submenu showing what the pill is basing
-                 itself on. April 2026 Samsung firmwares answer download mode with
-                 the D2 error while a lock-screen credential is set, so the word
-                 says what the owner is asking for instead of the protocol name.
-
-                 16dp of air each side rather than the tight 10/12 the dot and word
-                 need: at 62dp the pill read as a tag hanging off a short word, and
-                 at 72dp it reads as the third toolbar control, which is what it
-                 is. Equal padding both sides because there is nothing asymmetric in
-                 it, and the longer word costs width through wrap_content rather
-                 than any geometry that has to be retuned. -->
             <LinearLayout
                 android:id="@+id/odinPill"
                 android:layout_width="wrap_content"
@@ -148,8 +99,6 @@
 
     </FrameLayout>
 
-    <!-- Invisible anchor for the popup menu: sits a bit right of and below
-         the circle button, so the popup overlaps the card below. -->
     <View
         android:id="@+id/menuAnchor"
         android:layout_width="8dp"
@@ -159,22 +108,6 @@
         android:layout_alignParentEnd="true"
         android:layout_below="@id/appBarLayout" />
 
-    <!-- Movable card stack (VIS1): the four OneUI cards live in a vertical
-         CardStackLayout. A tap is just a tap; hold anywhere on a card for a beat
-         and it lifts, snaps under the finger and sticks there until the finger
-         is lifted. The order and any hidden card are kept in dfroot_ui prefs.
-         The stack is wrap_content so the log below it still rides along with
-         whatever the cards add up to.
-
-         Below the app bar, as wide as the parent, nothing else: that is all the
-         constraints here ever said. The log panel is deliberately NOT anchored to
-         this stack even though it hangs under it, because CardStackLayout owns that
-         box (VIS4) - it reserves log_window_height of room under the advanced-log
-         card and hands the panel a topMargin that drops it into that gap, measured
-         from the top of the parent. Anchoring the two against each other would make
-         the stack's height depend on where the panel ended up, which is the answer
-         the stack is still computing; unanchored, the stack measures itself in one
-         pass and the panel lands in its own. -->
     <df.root.CardStackLayout
         android:id="@+id/cardStack"
         android:layout_width="match_parent"
@@ -187,9 +120,6 @@
         android:clipToPadding="false"
         android:orientation="vertical">
 
-    <!-- SU Manager picker. Upstream 3.2 removed the bundled ksud binary and
-         stages it from the selected manager's nativeLibraryDir, so the exploit
-         cannot run at all until a manager is picked here. -->
     <df.root.DraggableCardView
         android:id="@+id/cardSuManager"
         android:layout_width="match_parent"
@@ -461,23 +391,6 @@
 
     </df.root.CardStackLayout>
 
-    <!-- The advanced log. CardStackLayout owns this box (VIS4): it keeps a window
-         of @dimen/log_window_height under the "Show advanced log" card and cuts
-         the box to exactly that window with a top margin, so the log is exactly as
-         tall as the room it was given and can never run under a card further down
-         the stack - which is what used to slice the text in half along the card
-         edges. The margin is set on a layout pass, never with a translation: a
-         translated view leaves the strip it already drew sitting on the screen
-         under the cards. The padding used to be 140dp to keep the last lines clear
-         of the pills the log scrolled beneath; the box is bounded now, so it only
-         needs a small inset.
-
-         The text and the fade are ONE box rather than two views that happen to
-         agree. Kept apart, each was placed on its own and faded on its own, and
-         the fade was reliably a step behind the text it is meant to be lying on -
-         the log flashed up whole and the gradient arrived after it. In one box the
-         gradient is simply the top of it: same place, same height, same alpha,
-         same frame. -->
     <FrameLayout
         android:id="@+id/logWindow"
         android:layout_width="match_parent"
@@ -505,9 +418,6 @@
 
         </ScrollView>
 
-        <!-- OneUI-style fade over the log box. Not clickable, so a press that
-             lands on it carries on through to the text underneath: the bottom of
-             the log is covered in gradient, and still has to scroll. -->
         <df.root.BottomFadeView
             android:id="@+id/bottomFade"
             android:layout_width="match_parent"
@@ -517,7 +427,6 @@
 
     </FrameLayout>
 
-    <!-- OneUI-update-style two-step progress bar -->
     <df.root.TwoStepProgressView
         android:id="@+id/twoStep"
         android:layout_width="match_parent"
@@ -527,11 +436,6 @@
         android:layout_marginBottom="6dp"
         android:layout_above="@+id/btnRun" />
 
-    <!-- OneUI search-bar style floating pill. Its left edge sits at 26% of the parent and
-         it is 48% wide, which is what the vertical guideline used to say; both numbers are
-         already computed in pixels in MainActivity (setCompactButton measures the parent),
-         so applyRunPillGeometry() sets leftMargin and width in code. wrap_content is only
-         the fall-back for the frame before that runs. -->
     <df.root.PillButton
         android:id="@+id/btnRun"
         android:layout_width="wrap_content"
@@ -547,20 +451,11 @@
         android:stateListAnimator="@null"
         android:text="Run exploit"
         android:textSize="14sp"
-        android:backgroundTint="#FF7A7A7A"
-        android:textColor="#FFE0E0E0"
+        android:backgroundTint="#FF00C8FF"
+        android:textColor="#FF000000"
         app:strokeWidth="0.5dp"
-        app:strokeColor="#FFA6A6A6" />
+        app:strokeColor="#FF00C8FF" />
 
-    <!-- SU-manager launcher. Circle (54dp, chevron dead-centre) while a run is
-         in flight; once root is verified MainActivity morphs it into a pill the
-         same width as the shrunken Run pill, so the bottom row reads as two
-         equal pills with the share circle mirroring the left edge and the old
-         right-hand deadzone filled. The chevron is pinned 17dp from the right
-         edge = (54-20)/2, which centres it in the circle AND puts it at the
-         pill's end - one drawable, no icon animation. No KSU logo: the manager
-         can be KernelSU, KernelSU-Next, KowSU or anything else that ships
-         libksud.so, so a KernelSU-shaped glyph would be a lie. -->
     <FrameLayout
         android:id="@+id/btnKsu"
         android:layout_width="54dp"
@@ -578,11 +473,6 @@
         android:focusable="true"
         android:visibility="gone">
 
-        <!-- Fades in while the circle opens up; dark ink on the lit pill.
-             Centered in the space left of the chevron (marginEnd clears the
-             chevron), which reads better than hugging the pill's left edge.
-             The morph's end action forces a re-layout so the label actually
-             re-centres as the width animates. Nudge marginEnd to move it. -->
         <TextView
             android:id="@+id/ksuLabel"
             android:layout_width="wrap_content"
@@ -605,23 +495,6 @@
 
     </FrameLayout>
 
-    <!-- Share log circle: same 54dp size as the KernelSU launcher, sitting to
-         the LEFT of the run pill (mirroring btnKsu on the right). Dark grey
-         (#1F1F1F, like the Rooted pill / unlit KSU circle) with the glyph in
-         #6E6E6E — the exact colour of the "Rooted" text. padding 0 + center
-         scaleType keep the glyph dead-centre. Hidden until a run has finished;
-         MainActivity.setShareButtonVisible pops it in like btnKsu.
-
-         It is pinned to the parent's start rather than to the Run pill: the
-         pill's left edge is not a layout rule at all, it is a leftMargin that
-         applyRunPillGeometry() puts in at runtime, and RelativeLayout resolves
-         a layout_toStartOf anchor against the pill's own rule (alignParentStart,
-         i.e. x=0) instead of against that margin. Measured on device: the circle
-         came out at x = -186..-34 - visible, enabled, clickable, entirely off
-         the left edge of the screen, which is why the share button looked like
-         it had vanished. layout_marginStart is the fall-back for the frame
-         before applyRunPillGeometry() has run (26% inset - 12dp gap - 54dp
-         circle = 33.4dp); the code sets the exact px every time the pill moves. -->
     <ImageButton
         android:id="@+id/btnShareLog"
         android:layout_width="54dp"
@@ -638,15 +511,17 @@
         android:tint="#FF6E6E6E"
         android:visibility="gone" />
 
-    <!-- Dim overlay: darkens the app while one of the toolbar popups (the overflow menu, the
-         recovery card) is open. How dark is decided where the popup opens, in MainActivity's
-         showToolbarCard - 75%, not the 50% these started at: the cards are #1C1C1C, and over a
-         barely-darkened app their edge could not be told from the screen behind them. Declared last
-         on purpose: RelativeLayout draws children in declaration order and the cards are
-         declared earlier, so this lands above them. It is still positioned in RelativeLayout's
-         first pass, because no child here references it by id - a child that referenced a
-         later sibling would be deferred to the second pass, and would then be placed (and
-         drawn) after it. -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="6dp"
+        android:gravity="center"
+        android:text="Created by @Kurwakid1337"
+        android:textColor="#FF444444"
+        android:textSize="11sp"
+        android:elevation="0dp" />
+
     <View
         android:id="@+id/dimOverlay"
         android:layout_width="match_parent"
