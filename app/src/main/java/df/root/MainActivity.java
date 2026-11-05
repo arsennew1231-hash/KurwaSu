@@ -954,33 +954,24 @@ public class MainActivity extends Activity implements IReporter {
     private List<SuManagerEntry> scanSuManagers() {
         List<SuManagerEntry> out = new ArrayList<>();
         PackageManager pm = getPackageManager();
+        
+        // Жесткая проверка официального менеджера KernelSU
+        try {
+            ApplicationInfo ai = pm.getApplicationInfo("me.weishu.kernelsu", 0);
+            out.add(new SuManagerEntry(ai.packageName, pm.getApplicationLabel(ai)));
+        } catch (PackageManager.NameNotFoundException ignored) {}
+
+        // Общий сканер на случай других форков или если первый не отработал
         for (ApplicationInfo ai : pm.getInstalledApplications(0)) {
             if (ai.packageName.equals(getPackageName())) continue;
+            if (out.stream().anyMatch(e -> e.packageName.equals(ai.packageName))) continue;
             
             boolean found = false;
-            
-            // 1. Стандартный путь из nativeLibraryDir
-            if (ai.nativeLibraryDir != null) {
-                if (new File(ai.nativeLibraryDir, "libksud.so").exists()) {
-                    found = true;
-                }
-            }
-            
-            // 2. Страховка через parent sourceDir (для альтернативных путей в lib/arm64[-v8a])
-            if (!found && ai.sourceDir != null) {
+            if (ai.nativeLibraryDir != null && new File(ai.nativeLibraryDir, "libksud.so").exists()) {
+                found = true;
+            } else if (ai.sourceDir != null) {
                 File appDir = new File(ai.sourceDir).getParentFile();
-                if (appDir != null) {
-                    if (new File(appDir, "lib/arm64/libksud.so").exists() ||
-                        new File(appDir, "lib/arm64-v8a/libksud.so").exists() ||
-                        new File(appDir, "lib/armeabi-v7a/libksud.so").exists()) {
-                        found = true;
-                    }
-                }
-            }
-            
-            // 3. Страховка для прямой проверки внутри data-папки приложения
-            if (!found && ai.dataDir != null) {
-                if (new File(ai.dataDir, "lib/libksud.so").exists()) {
+                if (appDir != null && (new File(appDir, "lib/arm64/libksud.so").exists() || new File(appDir, "lib/arm64-v8a/libksud.so").exists())) {
                     found = true;
                 }
             }
@@ -989,6 +980,7 @@ public class MainActivity extends Activity implements IReporter {
                 out.add(new SuManagerEntry(ai.packageName, pm.getApplicationLabel(ai)));
             }
         }
+        
         out.sort((a, b) -> a.label.toString().compareToIgnoreCase(b.label.toString()));
         return out;
     }
@@ -1008,6 +1000,16 @@ public class MainActivity extends Activity implements IReporter {
             }
             if (suManagerPkg == null) sp.edit().remove("su_manager").apply();
         }
+        
+        // Если ничего не выбрано, но менеджер есть в системе — автовыбираем его
+        if (suManagerPkg == null) {
+            List<SuManagerEntry> apps = scanSuManagers();
+            if (!apps.isEmpty()) {
+                selectSuManager(apps.get(0));
+                return;
+            }
+        }
+
         if (binding.suManagerSubtitle != null) {
             binding.suManagerSubtitle.setText(suManagerPkg == null
                     ? "Not selected - required"
