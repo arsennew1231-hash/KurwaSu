@@ -954,31 +954,21 @@ public class MainActivity extends Activity implements IReporter {
     private List<SuManagerEntry> scanSuManagers() {
         List<SuManagerEntry> out = new ArrayList<>();
         PackageManager pm = getPackageManager();
+        
+        // Принудительно цепляем me.weishu.kernelsu
+        try {
+            ApplicationInfo ai = pm.getApplicationInfo("me.weishu.kernelsu", 0);
+            out.add(new SuManagerEntry(ai.packageName, pm.getApplicationLabel(ai)));
+        } catch (PackageManager.NameNotFoundException ignored) {}
+
         for (ApplicationInfo ai : pm.getInstalledApplications(0)) {
             if (ai.packageName.equals(getPackageName())) continue;
+            if (out.stream().anyMatch(e -> e.packageName.equals(ai.packageName))) continue;
             
             boolean found = false;
-            
-            if (ai.packageName.equals("me.weishu.kernelsu")) {
+            if (ai.nativeLibraryDir != null && new File(ai.nativeLibraryDir, "libksud.so").exists()) {
                 found = true;
             }
-            
-            if (!found && ai.nativeLibraryDir != null) {
-                if (new File(ai.nativeLibraryDir, "libksud.so").exists()) {
-                    found = true;
-                }
-            }
-            
-            if (!found && ai.sourceDir != null) {
-                File appDir = new File(ai.sourceDir).getParentFile();
-                if (appDir != null) {
-                    if (new File(appDir, "lib/arm64/libksud.so").exists() ||
-                        new File(appDir, "lib/arm64-v8a/libksud.so").exists()) {
-                        found = true;
-                    }
-                }
-            }
-            
             if (found) {
                 out.add(new SuManagerEntry(ai.packageName, pm.getApplicationLabel(ai)));
             }
@@ -992,16 +982,24 @@ public class MainActivity extends Activity implements IReporter {
         String saved = sp.getString("su_manager", null);
         suManagerPkg = null;
         suManagerLabel = null;
+        
+        List<SuManagerEntry> apps = scanSuManagers();
+        
         if (saved != null) {
-            for (SuManagerEntry e : scanSuManagers()) {
+            for (SuManagerEntry e : apps) {
                 if (e.packageName.equals(saved)) {
                     suManagerPkg = e.packageName;
                     suManagerLabel = e.label;
                     break;
                 }
             }
-            if (suManagerPkg == null) sp.edit().remove("su_manager").apply();
         }
+        
+        if (suManagerPkg == null && !apps.isEmpty()) {
+            selectSuManager(apps.get(0));
+            return;
+        }
+
         if (binding.suManagerSubtitle != null) {
             binding.suManagerSubtitle.setText(suManagerPkg == null
                     ? "Not selected - required"
