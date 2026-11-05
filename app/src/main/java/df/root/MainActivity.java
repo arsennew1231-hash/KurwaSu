@@ -1637,3 +1637,190 @@ public class MainActivity extends Activity implements IReporter {
             applyRunPillGeometry(parentW);
         });
         a.start();
+
+        int ksuPillPx = (int) (target * parentW);
+        int ksuCirclePx = (int) (KSU_CIRCLE_DP * density);
+        if (binding.btnKsu != null) {
+            binding.btnKsu.setEnabled(ksuLit);
+            boolean wasVisible = binding.btnKsu.getVisibility() == View.VISIBLE && binding.btnKsu.getAlpha() > 0.99f;
+            binding.btnKsu.setBackgroundTintList(ColorStateList.valueOf(ksuLit ? 0xFFB0B0B0 : 0xFF1F1F1F));
+            if (binding.ksuChevron != null) {
+                binding.ksuChevron.setImageTintList(ColorStateList.valueOf(ksuLit ? 0xFF1F1F1F : 0xFF6E6E6E));
+            }
+            if (compact && !wasVisible) {
+                setKsuWidth(ksuCirclePx);
+                if (binding.ksuLabel != null) binding.ksuLabel.setAlpha(0f);
+                binding.btnKsu.setVisibility(View.VISIBLE);
+                binding.btnKsu.setAlpha(0f);
+                binding.btnKsu.setScaleX(0.6f);
+                binding.btnKsu.setScaleY(0.6f);
+                binding.btnKsu.postDelayed(() -> binding.btnKsu.animate()
+                        .alpha(1f).scaleX(1f).scaleY(1f).setDuration(180)
+                        .withEndAction(() -> {
+                            settleKsuTint(ksuLit);
+                            morphKsuToPill(ksuLit, ksuPillPx, ksuCirclePx);
+                        }).start(), 150);
+            } else if (compact) {
+                settleKsuTint(ksuLit);
+                morphKsuToPill(ksuLit, ksuPillPx, ksuCirclePx);
+            } else {
+                if (binding.ksuLabel != null) binding.ksuLabel.animate().alpha(0f).setDuration(150).start();
+                binding.btnKsu.animate().alpha(0f).scaleX(0.6f).scaleY(0.6f).setDuration(200)
+                        .withEndAction(() -> {
+                            binding.btnKsu.setVisibility(View.GONE);
+                            setKsuWidth(ksuCirclePx);
+                        }).start();
+            }
+        }
+    }
+
+    private void settleKsuTint(boolean ksuLit) {
+        if (!ksuLit || binding.btnKsu == null) return;
+        android.animation.ValueAnimator g = android.animation.ValueAnimator.ofFloat(0f, 1f);
+        g.setStartDelay(250);
+        g.setDuration(300);
+        g.addUpdateListener(anim -> binding.btnKsu
+                .setBackgroundTintList(ColorStateList.valueOf(
+                        mixColor(0xFFB0B0B0, 0xFF9A9A9E, (float) anim.getAnimatedValue()))));
+        g.start();
+    }
+
+    private void morphKsuToPill(boolean lit, int pillPx, int circlePx) {
+        if (binding.btnKsu == null) return;
+        int from = binding.btnKsu.getWidth();
+        int to = lit ? pillPx : circlePx;
+        if (from <= 0 || from == to) return;
+        if (ksuMorph != null && ksuMorph.isRunning()) ksuMorph.cancel();
+        ksuMorph = android.animation.ValueAnimator.ofInt(from, to);
+        ksuMorph.setDuration(250);
+        ksuMorph.setInterpolator(new android.view.animation.DecelerateInterpolator());
+        ksuMorph.addUpdateListener(anim -> setKsuWidth((int) anim.getAnimatedValue()));
+        ksuMorph.addListener(new android.animation.AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(android.animation.Animator animation) {
+                if (binding.btnKsu != null) binding.btnKsu.requestLayout();
+            }
+        });
+        ksuMorph.start();
+        if (binding.ksuLabel != null) {
+            binding.ksuLabel.animate().alpha(lit ? 1f : 0f).setStartDelay(lit ? 120 : 0).setDuration(220).start();
+        }
+    }
+
+    private void applyRunPillGeometry(float parentW) {
+        if (binding.btnRun == null || binding.btnRun.getParent() == null) return;
+        if (parentW <= 0) parentW = ((View) binding.btnRun.getParent()).getWidth();
+        if (parentW <= 0) parentW = getResources().getDisplayMetrics().widthPixels;
+        android.widget.RelativeLayout.LayoutParams lp =
+                (android.widget.RelativeLayout.LayoutParams) binding.btnRun.getLayoutParams();
+        lp.leftMargin = (int) (PILL_INSET_FRACTION * parentW);
+        lp.width = (int) (pillPercent * parentW);
+        binding.btnRun.setLayoutParams(lp);
+
+        if (binding.btnShareLog != null) {
+            android.widget.RelativeLayout.LayoutParams shareLp =
+                    (android.widget.RelativeLayout.LayoutParams) binding.btnShareLog.getLayoutParams();
+            if (shareLp.width > 0) {
+                float gap = KSU_GAP_DP * getResources().getDisplayMetrics().density;
+                shareLp.leftMargin = Math.max(0, lp.leftMargin - Math.round(gap) - shareLp.width);
+                binding.btnShareLog.setLayoutParams(shareLp);
+            }
+        }
+    }
+
+    private void setKsuWidth(int px) {
+        if (binding.btnKsu == null) return;
+        android.widget.RelativeLayout.LayoutParams lp =
+                (android.widget.RelativeLayout.LayoutParams) binding.btnKsu.getLayoutParams();
+        lp.width = px;
+        binding.btnKsu.setLayoutParams(lp);
+    }
+
+    private void openKsu() {
+        if (suManagerPkg == null) return;
+        Intent launch = getPackageManager().getLaunchIntentForPackage(suManagerPkg);
+        if (launch == null) {
+            Log.i(TAG, "no launch intent for " + suManagerPkg);
+            return;
+        }
+        launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(launch);
+    }
+
+    private static int mixColor(int a, int b, float t) {
+        int ar = (a >> 16) & 0xFF, ag = (a >> 8) & 0xFF, ab = a & 0xFF;
+        int br = (b >> 16) & 0xFF, bg = (b >> 8) & 0xFF, bb = b & 0xFF;
+        return 0xFF000000
+                | (Math.round(ar + (br - ar) * t) << 16)
+                | (Math.round(ag + (bg - ag) * t) << 8)
+                | Math.round(ab + (bb - ab) * t);
+    }
+
+    private void shareLog() {
+        String log = logBuffer.length() > 0 ? logBuffer.toString() : readLastLog();
+        if (log.trim().isEmpty()) return;
+        try {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Downloads.DISPLAY_NAME, "dirtyfrag_log.txt");
+            values.put(MediaStore.Downloads.MIME_TYPE, "text/plain");
+            Uri uri = getContentResolver().insert(
+                    MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+            if (uri != null) {
+                try (java.io.OutputStream out = getContentResolver().openOutputStream(uri)) {
+                    out.write(log.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "save log failed", e);
+        }
+        try {
+            startActivity(new Intent(android.app.DownloadManager.ACTION_VIEW_DOWNLOADS));
+        } catch (Exception e) {
+            Log.e(TAG, "open downloads failed", e);
+        }
+    }
+
+    private void runExploit() {
+        SharedPreferences sp = mDeCtx.getSharedPreferences("dfroot", MODE_PRIVATE);
+        boolean autoSoftReboot = sp.getBoolean("auto_soft_reboot", false);
+        sp.edit().putBoolean("soft_reboot", autoSoftReboot).apply();
+        lastFailReason = null;
+        try {
+            int rc = ExploitRunner.run(mDeCtx, this);
+            if (rc != 0) {
+                String why = lastFailReason != null ? lastFailReason
+                        : rc == 1 ? "ksud nonzero exit"
+                        : rc == 2 ? "check logcat & dmesg"
+                        : "failed to patch files";
+                report("\n=== exploit failed: " + why + " ===\n");
+            }
+            mDeCtx.getSharedPreferences("dfroot", MODE_PRIVATE)
+                    .edit().putBoolean("last_run_success", rc == 0).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "exploit exception", e);
+            report("\nexception: " + e + "\n");
+        } finally {
+            mMain.post(() -> {
+                running = false;
+                boolean rooted = new File("/dev/df").exists();
+                if (rooted) {
+                    setRootedState(true);
+                    if (binding.twoStep != null) binding.twoStep.setSeg2(1f, "Verified", 0xFFFFFFFF);
+                } else {
+                    setFailedState();
+                    setRootedState(false);
+                }
+                updateLogVisibility();
+                if (rooted) mExec.execute(MainActivity.this::refreshRecovery);
+            });
+        }
+    }
+
+    private void openUrl(String url) {
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+        } catch (Exception e) {
+            Log.i(TAG, "no browser for " + url);
+        }
+    }
+}
