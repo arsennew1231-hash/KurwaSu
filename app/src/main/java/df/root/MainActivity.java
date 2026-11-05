@@ -956,9 +956,38 @@ public class MainActivity extends Activity implements IReporter {
         PackageManager pm = getPackageManager();
         for (ApplicationInfo ai : pm.getInstalledApplications(0)) {
             if (ai.packageName.equals(getPackageName())) continue;
-            if (ai.nativeLibraryDir == null) continue;
-            if (!new File(ai.nativeLibraryDir, "libksud.so").exists()) continue;
-            out.add(new SuManagerEntry(ai.packageName, pm.getApplicationLabel(ai)));
+            
+            boolean found = false;
+            
+            // 1. Стандартный путь из nativeLibraryDir
+            if (ai.nativeLibraryDir != null) {
+                if (new File(ai.nativeLibraryDir, "libksud.so").exists()) {
+                    found = true;
+                }
+            }
+            
+            // 2. Страховка через parent sourceDir (для альтернативных путей в lib/arm64[-v8a])
+            if (!found && ai.sourceDir != null) {
+                File appDir = new File(ai.sourceDir).getParentFile();
+                if (appDir != null) {
+                    if (new File(appDir, "lib/arm64/libksud.so").exists() ||
+                        new File(appDir, "lib/arm64-v8a/libksud.so").exists() ||
+                        new File(appDir, "lib/armeabi-v7a/libksud.so").exists()) {
+                        found = true;
+                    }
+                }
+            }
+            
+            // 3. Страховка для прямой проверки внутри data-папки приложения
+            if (!found && ai.dataDir != null) {
+                if (new File(ai.dataDir, "lib/libksud.so").exists()) {
+                    found = true;
+                }
+            }
+            
+            if (found) {
+                out.add(new SuManagerEntry(ai.packageName, pm.getApplicationLabel(ai)));
+            }
         }
         out.sort((a, b) -> a.label.toString().compareToIgnoreCase(b.label.toString()));
         return out;
@@ -1711,87 +1740,4 @@ public class MainActivity extends Activity implements IReporter {
         if (suManagerPkg == null) return;
         Intent launch = getPackageManager().getLaunchIntentForPackage(suManagerPkg);
         if (launch == null) {
-            Log.i(TAG, "no launch intent for " + suManagerPkg);
-            return;
-        }
-        launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(launch);
-    }
-
-    private static int mixColor(int a, int b, float t) {
-        int ar = (a >> 16) & 0xFF, ag = (a >> 8) & 0xFF, ab = a & 0xFF;
-        int br = (b >> 16) & 0xFF, bg = (b >> 8) & 0xFF, bb = b & 0xFF;
-        return 0xFF000000
-                | (Math.round(ar + (br - ar) * t) << 16)
-                | (Math.round(ag + (bg - ag) * t) << 8)
-                | Math.round(ab + (bb - ab) * t);
-    }
-
-    private void shareLog() {
-        String log = logBuffer.length() > 0 ? logBuffer.toString() : readLastLog();
-        if (log.trim().isEmpty()) return;
-        try {
-            ContentValues values = new ContentValues();
-            values.put(MediaStore.Downloads.DISPLAY_NAME, "dirtyfrag_log.txt");
-            values.put(MediaStore.Downloads.MIME_TYPE, "text/plain");
-            Uri uri = getContentResolver().insert(
-                    MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-            if (uri != null) {
-                try (java.io.OutputStream out = getContentResolver().openOutputStream(uri)) {
-                    out.write(log.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-                }
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "save log failed", e);
-        }
-        try {
-            startActivity(new Intent(android.app.DownloadManager.ACTION_VIEW_DOWNLOADS));
-        } catch (Exception e) {
-            Log.e(TAG, "open downloads failed", e);
-        }
-    }
-
-    private void runExploit() {
-        SharedPreferences sp = mDeCtx.getSharedPreferences("dfroot", MODE_PRIVATE);
-        boolean autoSoftReboot = sp.getBoolean("auto_soft_reboot", false);
-        sp.edit().putBoolean("soft_reboot", autoSoftReboot).apply();
-        lastFailReason = null;
-        try {
-            int rc = ExploitRunner.run(mDeCtx, this);
-            if (rc != 0) {
-                String why = lastFailReason != null ? lastFailReason
-                        : rc == 1 ? "ksud nonzero exit"
-                        : rc == 2 ? "check logcat & dmesg"
-                        : "failed to patch files";
-                report("\n=== exploit failed: " + why + " ===\n");
-            }
-            mDeCtx.getSharedPreferences("dfroot", MODE_PRIVATE)
-                    .edit().putBoolean("last_run_success", rc == 0).apply();
-        } catch (Exception e) {
-            Log.e(TAG, "exploit exception", e);
-            report("\nexception: " + e + "\n");
-        } finally {
-            mMain.post(() -> {
-                running = false;
-                boolean rooted = new File("/dev/df").exists();
-                if (rooted) {
-                    setRootedState(true);
-                    if (binding.twoStep != null) binding.twoStep.setSeg2(1f, "Verified", 0xFFFFFFFF);
-                } else {
-                    setFailedState();
-                    setRootedState(false);
-                }
-                updateLogVisibility();
-                if (rooted) mExec.execute(MainActivity.this::refreshRecovery);
-            });
-        }
-    }
-
-    private void openUrl(String url) {
-        try {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-        } catch (Exception e) {
-            Log.i(TAG, "no browser for " + url);
-        }
-    }
-}
+            Log
