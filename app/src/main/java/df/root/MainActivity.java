@@ -340,6 +340,7 @@ public class MainActivity extends Activity implements IReporter {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        applyDynamicAccent();
 
         // Material You / Adaptive Theme Integration
         try {
@@ -1835,4 +1836,20 @@ public class MainActivity extends Activity implements IReporter {
             Log.i(TAG, "no browser for " + url);
         }
     }
+
+    private void applyDynamicAccent() {
+        try {
+            int accent = getSharedPreferences("theme_prefs", MODE_PRIVATE).getInt("accent", 0);
+            if (accent != 0) {
+                // Динамическое применение цвета к ключевым элементам интерфейса
+                android.view.View managerBtn = findViewById(getResources().getIdentifier("manager", "id", getPackageName()));
+                if (managerBtn != null) {
+                    managerBtn.getBackground().setTint(accent);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
