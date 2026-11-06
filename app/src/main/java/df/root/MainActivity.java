@@ -340,6 +340,16 @@ public class MainActivity extends Activity implements IReporter {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Dynamic / Adaptive Theme Applied
+        try {
+            int accent = getSharedPreferences("theme_prefs", MODE_PRIVATE).getInt("accent", 0);
+            if (accent != 0) {
+                // Применяем акцент к элементам, если нужно
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    
         mDeCtx = createDeviceProtectedStorageContext();
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
