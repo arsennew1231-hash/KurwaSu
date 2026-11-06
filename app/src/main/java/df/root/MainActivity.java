@@ -1854,15 +1854,6 @@ public class MainActivity extends Activity implements IReporter {
     }
 
 
-    private void runCardAnimation() {
-        try {
-            android.view.View content = findViewById(android.R.id.content);
-            if (content != null) {
-                android.view.animation.AlphaAnimation anim = new android.view.animation.AlphaAnimation(0.0f, 1.0f);
-                anim.setDuration(450);
-                anim.setFillAfter(true);
-                content.startAnimation(anim);
-            }
         } catch (Exception e) {
             e.printStackTrace();
         }
