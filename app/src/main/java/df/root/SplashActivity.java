@@ -18,6 +18,12 @@ public class SplashActivity extends Activity {
         setContentView(R.layout.activity_splash);
 
         TextView title = findViewById(R.id.splashText);
+        View text = findViewById(R.id.splashText);
+        if (text != null && text instanceof android.widget.TextView) {
+            int accent = getSharedPreferences("theme_prefs", MODE_PRIVATE).getInt("accent", 0xFF6200EE);
+            ((android.widget.TextView) text).setTextColor(accent);
+        }
+
         TextView sub = findViewById(R.id.splashSub);
 
         // Анимация заголовка — снизу вверх + fade in
