@@ -12,18 +12,20 @@
         android:layout_centerInParent="true"
         android:text="KurwaSU"
         android:textColor="#FF00C8FF"
-        android:textSize="42sp"
+        android:textSize="48sp"
         android:textStyle="bold"
         android:alpha="0" />
 
     <TextView
+        android:id="@+id/splashSub"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@id/splashText"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="40dp"
+        android:layout_marginTop="12dp"
         android:text="by @Kurwakid1337"
         android:textColor="#FF444444"
-        android:textSize="12sp" />
+        android:textSize="13sp"
+        android:alpha="0" />
 
 </RelativeLayout>
