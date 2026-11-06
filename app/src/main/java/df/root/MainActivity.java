@@ -408,7 +408,7 @@ public class MainActivity extends Activity implements IReporter {
                     if (child instanceof TextView) {
                         titleView = (TextView) child;
                         titleView.setTypeface(bold);
-                        headlinePx = Math.round(titleView.getPaint().measureText("DirtyFrag"));
+                        headlinePx = Math.round(titleView.getPaint().measureText("KurwaSU"));
                     }
                 }
             });
