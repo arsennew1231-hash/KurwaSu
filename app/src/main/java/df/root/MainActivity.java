@@ -340,6 +340,7 @@ public class MainActivity extends Activity implements IReporter {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        runCardAnimation();
         applyDynamicAccent();
 
         // Material You / Adaptive Theme Integration
@@ -1846,6 +1847,20 @@ public class MainActivity extends Activity implements IReporter {
                 if (managerBtn != null) {
                     managerBtn.getBackground().setTint(accent);
                 }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void runCardAnimation() {
+        try {
+            android.view.animation.AlphaAnimation anim = new android.view.animation.AlphaAnimation(0.0f, 1.0f);
+            anim.setDuration(400);
+            View root = getWindow().getDecorView().getRootView();
+            if (root != null) {
+                root.startAnimation(anim);
             }
         } catch (Exception e) {
             e.printStackTrace();
